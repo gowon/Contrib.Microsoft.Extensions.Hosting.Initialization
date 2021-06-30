@@ -1,24 +1,27 @@
 ﻿namespace SampleConsoleApp
 {
+    using System;
     using System.Net.Http;
     using System.Threading.Tasks;
-    using Extensions.Hosting.ApplicationInitializer;
+    using Extensions.Hosting.Bootstrapper;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
 
     internal class Program
     {
         private static async Task Main(string[] args)
         {
-            await Host.CreateDefaultBuilder(args)
+            using var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddSingleton<Foo>();
+
                     services
-                        .AddInitializer(provider =>
+                        .AddInitializer<FooInitializer>()
+                        .AddInitializer(_ =>
                         {
-                            var logger = provider.GetRequiredService<ILogger<Program>>();
-                            logger.LogInformation("Initializing stuff.");
+                            Console.WriteLine("A second initializer.");
+                            return Task.CompletedTask;
                         })
                         .AddInitializer(provider =>
                         {
@@ -29,8 +32,10 @@
 
                     services.AddHttpClient<SampleInitializer>();
                 })
-                .Build()
-                .RunAsync();
+                .Build();
+
+            await host.StartAsync();
+            await host.StopAsync();
         }
     }
 }

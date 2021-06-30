@@ -1,6 +1,7 @@
-﻿namespace Extensions.Hosting.ApplicationInitializer
+﻿namespace Extensions.Hosting.Bootstrapper
 {
     using System;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
 
     public static class ServiceCollectionExtensions
@@ -66,7 +67,7 @@
 
 
         public static IServiceCollection AddInitializer(this IServiceCollection services,
-            Action<IServiceProvider> initializer)
+            Func<IServiceProvider,Task> initializer)
         {
             if (initializer == null)
             {

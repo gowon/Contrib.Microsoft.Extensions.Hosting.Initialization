@@ -1,4 +1,4 @@
-﻿namespace Extensions.Hosting.ApplicationInitializer
+﻿namespace Extensions.Hosting.Bootstrapper
 {
     using System;
     using System.Collections.Generic;
@@ -7,13 +7,15 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using static ExceptionFilterUtility;
 
     internal class ApplicationInitializationService : IHostedService
     {
         private readonly ILogger<ApplicationInitializationService> _logger;
         private readonly IServiceProvider _serviceProvider;
 
-        public ApplicationInitializationService(ILogger<ApplicationInitializationService> logger, IServiceProvider serviceProvider)
+        public ApplicationInitializationService(ILogger<ApplicationInitializationService> logger,
+            IServiceProvider serviceProvider)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
@@ -21,7 +23,7 @@
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting application initialization");
+            _logger.LogInformation("Application initialization starting");
 
             try
             {
@@ -31,25 +33,24 @@
 
                     foreach (var initializer in initializers)
                     {
-                        _logger.LogInformation("Starting initialization for {InitializerType}", initializer.GetType());
+                        _logger.LogInformation("{InitializerType} initialization starting", initializer.GetType());
                         try
                         {
-                            await initializer.InitializeAsync(cancellationToken);
-                            _logger.LogInformation("Initialization for {InitializerType} completed", initializer.GetType());
+                            await initializer.InitializeAsync();
+                            _logger.LogInformation("{InitializerType} initialization completed", initializer.GetType());
                         }
-                        catch (Exception ex)
+                        catch (Exception e) when (False(() =>
+                            _logger.LogError(e, "{InitializerType} initialization failed", initializer.GetType())))
                         {
-                            _logger.LogError(ex, "Initialization for {InitializerType} failed", initializer.GetType());
                             throw;
                         }
                     }
                 }
-                
+
                 _logger.LogInformation("Application initialization completed");
             }
-            catch(Exception ex)
+            catch (Exception e) when (False(() => _logger.LogError(e, "Application initialization failed")))
             {
-                _logger.LogError(ex, "Application initialization failed");
                 throw;
             }
         }

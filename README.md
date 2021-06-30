@@ -1,1 +1,5 @@
-# Contrib.Microsoft.Extensions.Hosting.Initialization
+# Extensions.Hosting.Bootstrapper
+
+## License
+
+MIT

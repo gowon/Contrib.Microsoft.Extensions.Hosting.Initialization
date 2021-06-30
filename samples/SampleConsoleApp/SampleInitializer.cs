@@ -1,9 +1,8 @@
 ﻿namespace SampleConsoleApp
 {
     using System.Net.Http;
-    using System.Threading;
     using System.Threading.Tasks;
-    using Extensions.Hosting.ApplicationInitializer;
+    using Extensions.Hosting.Bootstrapper;
 
     public class SampleInitializer : IApplicationInitializer
     {
@@ -14,9 +13,9 @@
             _httpClient = httpClient;
         }
 
-        public async Task InitializeAsync(CancellationToken cancellationToken)
+        public async Task InitializeAsync()
         {
-            var content = await _httpClient.GetStringAsync("https://bing.com");
+            _ = await _httpClient.GetStringAsync("https://bing.com");
         }
     }
 }
